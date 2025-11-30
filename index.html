@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesa de Som - Pombagiras</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a0000 50%, #0d0000 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            color: #fff;
+            border-bottom: 2px solid #8b0000;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(139,0,0,0.8);
+            color: #ff0040;
+        }
+
+        header h1 span {
+            color: #9932cc;
+        }
+
+        header p {
+            color: #ff6688;
+            font-size: 1.1em;
+            font-style: italic;
+        }
+
+        /* Seção principal */
+        .section {
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, rgba(139,0,0,0.3), rgba(0,0,0,0.8));
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid #8b0000;
+            box-shadow: 0 0 30px rgba(139,0,0,0.4);
+        }
+
+        .section-title {
+            color: #ff0040;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #9932cc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 0 10px rgba(255,0,64,0.5);
+        }
+
+        /* Grid de botões */
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        /* Container de cada botão com player */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Botões */
+        .sound-btn {
+            padding: 25px 15px;
+            border: 2px solid #9932cc;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+            min-height: 120px;
+            justify-content: center;
+            background: linear-gradient(135deg, #8b008b 0%, #9400d3 25%, #8a2be2 50%, #9932cc 75%, #800080 100%);
+            box-shadow: 0 5px 20px rgba(148,0,211,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sound-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+        }
+
+        .sound-btn:hover::before {
+            left: 100%;
+        }
+
+        .sound-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(148,0,211,0.6), 0 0 30px rgba(255,0,64,0.3);
+            border-color: #ff0040;
+            background: linear-gradient(135deg, #9400d3 0%, #a020f0 25%, #9932cc 50%, #8b008b 75%, #9400d3 100%);
+        }
+
+        .sound-btn:active {
+            transform: scale(0.95);
+        }
+
+        .sound-btn.playing {
+            border-color: #ff0040;
+            box-shadow: 0 0 30px rgba(255,0,64,0.8), 0 0 60px rgba(148,0,211,0.6);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255,0,64,0.8); }
+            50% { box-shadow: 0 0 50px rgba(255,0,64,1), 0 0 80px rgba(148,0,211,0.8); }
+        }
+
+        .sound-btn .icon {
+            font-size: 2em;
+        }
+
+        .sound-btn .label {
+            font-size: 0.9em;
+            line-height: 1.2;
+        }
+
+        /* Player embutido */
+        .player-wrapper {
+            display: none;
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+            border: 1px solid #9932cc;
+        }
+
+        .player-wrapper.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 200px;
+            }
+        }
+
+        .player-wrapper iframe {
+            width: 100%;
+            height: 80px;
+            border: none;
+        }
+
+        /* Instruções */
+        .instructions {
+            background: linear-gradient(135deg, rgba(139,0,0,0.2), rgba(148,0,211,0.1));
+            border: 1px solid #9932cc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .instructions h3 {
+            color: #ff0040;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            color: #ffccdd;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #9932cc;
+            border-top: 1px solid #8b0000;
+            margin-top: 30px;
+        }
+
+        footer p {
+            font-style: italic;
+        }
+
+        /* Rosa decorativa */
+        .rose {
+            color: #ff0040;
+            text-shadow: 0 0 10px rgba(255,0,64,0.8);
+        }
+
+        /* Responsivo */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.6em;
+            }
+            
+            .buttons-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .sound-btn {
+                padding: 15px 10px;
+                min-height: 100px;
+            }
+
+            .sound-btn .label {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌹 Mesa de Som <span>Terreiro</span></h1>
+            <p>Pontos e toques sagrados de Pombagiras</p>
+        </header>
+
+        <div class="instructions">
+            <h3>🖤 Como usar:</h3>
+            <ul>
+                <li>Clique em qualquer botão para tocar o ponto</li>
+                <li>O player abrirá abaixo do botão clicado</li>
+                <li>Ao clicar em outro botão, o som anterior para automaticamente</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title"><span class="rose">🌹</span> Pombagiras <span class="rose">🌹</span></h2>
+            <div class="buttons-grid">
+                
+                <!-- Maria Mulambo -->
+                <div class="button-container">
+                    <button class="sound-btn" onclick="playVideo(this, 'gIxyOkwiMxg')">
+                        <span class="icon">🌹</span>
+                        <span class="label">Maria Mulambo</span>
+                    </button>
+                    <div class="player-wrapper" id="player-gIxyOkwiMxg"></div>
+                </div>
+
+                <!-- Maria Padilha -->
+                <div class="button-container">
+                    <button class="sound-btn" onclick="playVideo(this, 'RjtzF8JMGuw')">
+                        <span class="icon">👑</span>
+                        <span class="label">Maria Padilha</span>
+                    </button>
+                    <div class="player-wrapper" id="player-RjtzF8JMGuw"></div>
+                </div>
+
+                <!-- Maria Quitéria -->
+                <div class="button-container">
+                    <button class="sound-btn" onclick="playVideo(this, 'Yx0O3xiw6cA')">
+                        <span class="icon">⚔️</span>
+                        <span class="label">Maria Quitéria</span>
+                    </button>
+                    <div class="player-wrapper" id="player-Yx0O3xiw6cA"></div>
+                </div>
+
+                <!-- Rosa Caveira -->
+                <div class="button-container">
+                    <button class="sound-btn" onclick="playVideo(this, '7mdal9zDfjo')">
+                        <span class="icon">💀</span>
+                        <span class="label">Rosa Caveira</span>
+                    </button>
+                    <div class="player-wrapper" id="player-7mdal9zDfjo"></div>
+                </div>
+
+                <!-- Maria Navalha -->
+                <div class="button-container">
+                    <button class="sound-btn" onclick="playVideo(this, 'GICcqTneW2A')">
+                        <span class="icon">🗡️</span>
+                        <span class="label">Maria Navalha</span>
+                    </button>
+                    <div class="player-wrapper" id="player-GICcqTneW2A"></div>
+                </div>
+
+                <!-- Maria Farrapo -->
+                <div class="button-container">
+                    <button class="sound-btn" onclick="playVideo(this, 'TB8pZN9-U6E')">
+                        <span class="icon">🖤</span>
+                        <span class="label">Maria Farrapo</span>
+                    </button>
+                    <div class="player-wrapper" id="player-TB8pZN9-U6E"></div>
+                </div>
+
+                <!-- Dama da Noite -->
+                <div class="button-container">
+                    <button class="sound-btn" onclick="playVideo(this, '3fr3Oq0nPvg')">
+                        <span class="icon">🌙</span>
+                        <span class="label">Dama da Noite</span>
+                    </button>
+                    <div class="player-wrapper" id="player-3fr3Oq0nPvg"></div>
+                </div>
+
+                <!-- Sete Saias -->
+                <div class="button-container">
+                    <button class="sound-btn" onclick="playVideo(this, 'oxaqnLGlstI')">
+                        <span class="icon">💃</span>
+                        <span class="label">Sete Saias</span>
+                    </button>
+                    <div class="player-wrapper" id="player-oxaqnLGlstI"></div>
+                </div>
+
+                <!-- Cigana -->
+                <div class="button-container">
+                    <button class="sound-btn" onclick="playVideo(this, 'GhO6r8Yxq10')">
+                        <span class="icon">🔮</span>
+                        <span class="label">Cigana</span>
+                    </button>
+                    <div class="player-wrapper" id="player-GhO6r8Yxq10"></div>
+                </div>
+
+                <!-- Menina -->
+                <div class="button-container">
+                    <button class="sound-btn" onclick="playVideo(this, '7jDQI0svtHk')">
+                        <span class="icon">🎀</span>
+                        <span class="label">Menina</span>
+                    </button>
+                    <div class="player-wrapper" id="player-7jDQI0svtHk"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer>
+            <p>🌹 Laroyê Pombagira! Salve as rainhas da noite! 🌹</p>
+        </footer>
+    </div>
+
+    <script>
+        let currentPlayer = null;
+        let currentButton = null;
+        let currentWrapper = null;
+
+        function playVideo(button, videoId) {
+            // Se clicar no mesmo botão que está tocando, para o vídeo
+            if (currentButton === button) {
+                stopCurrentVideo();
+                return;
+            }
+
+            // Para o vídeo anterior
+            stopCurrentVideo();
+
+            // Configura o novo player
+            const wrapper = document.getElementById('player-' + videoId);
+            
+            // Cria o iframe do YouTube
+            wrapper.innerHTML = `
+                <iframe 
+                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
+                    allow="autoplay; encrypted-media" 
+                    allowfullscreen>
+                </iframe>
+            `;
+
+            // Ativa o player e o botão
+            wrapper.classList.add('active');
+            button.classList.add('playing');
+
+            // Guarda referências
+            currentPlayer = wrapper;
+            currentButton = button;
+            currentWrapper = wrapper;
+        }
+
+        function stopCurrentVideo() {
+            if (currentWrapper) {
+                currentWrapper.innerHTML = '';
+                currentWrapper.classList.remove('active');
+            }
+            if (currentButton) {
+                currentButton.classList.remove('playing');
+            }
+            currentPlayer = null;
+            currentButton = null;
+            currentWrapper = null;
+        }
+    </script>
+</body>
+</html>
